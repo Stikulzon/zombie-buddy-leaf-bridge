@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'com.diffplug.spotless'
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version.toInteger())
+}
+
+sourceSets.main.java.setSrcDirs([])
+apply from: 'gradle/jattach.gradle'
+
+repositories {
+    mavenCentral()
+}
+
+spotless {
+    java {
+        target(fileTree('src') { include '**/*.java' }, fileTree('buildSrc/src') { include '**/*.java' })
+        googleJavaFormat(google_java_format_version)
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}

@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "ua.zefir.zombiebuddyleafbridge.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": ["LoaderMixin", "PatchEngineMixin", "ExposerMixin"],
+  "injectors": {"defaultRequire": 1}
+}

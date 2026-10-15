@@ -1,0 +1,16 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url = 'https://maven.fabricmc.net/' }
+        maven { url = 'https://maven.aoqia.dev/releases/' }
+    }
+    plugins {
+        id 'dev.aoqia.leaf.loom' version providers.gradleProperty('leaf_loom_version').get()
+        id 'com.diffplug.spotless' version providers.gradleProperty('spotless_version').get()
+    }
+}
+
+rootProject.name = 'zombie-buddy-leaf-bridge'
+if (providers.gradleProperty('bridge.portable').orNull == 'true') {
+    rootProject.buildFileName = 'portable.gradle'
+}

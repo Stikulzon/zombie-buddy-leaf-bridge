@@ -1,0 +1,7 @@
+import ua.zefir.gradle.workshop.PrepareJattach
+
+def prepareJattach = tasks.register('prepareJattach', PrepareJattach) {
+    outputDirectory = layout.buildDirectory.dir('generated/jattach')
+}
+
+sourceSets.main.resources.srcDir(prepareJattach.flatMap { it.outputDirectory })

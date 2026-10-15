@@ -1,0 +1,104 @@
+plugins {
+    id 'dev.aoqia.leaf.loom'
+    id 'maven-publish'
+    id 'com.diffplug.spotless'
+    id 'bridge.workshop'
+}
+
+version = "${mod_version}+${zomboid_version}"
+def javaVersion = java_version.toInteger()
+
+apply from: 'gradle/jattach.gradle'
+
+repositories {
+    maven { url = 'https://maven.aoqia.dev/releases/' }
+}
+
+dependencies {
+    zomboid "com.theindiestone:zomboid:${zomboid_version}"
+    implementation "dev.aoqia.leaf:loader:${leaf_loader_version}"
+    compileOnly(workshop.dependency('3619862853:ZombieBuddy'))
+}
+
+def buddyJar = configurations.compileOnly.dependencies
+    .collect { workshop.findMod(it) }
+    .find { it?.id() == 'ZombieBuddy' }.jar()
+
+loom {
+    mods { create(project.name) { sourceSet(sourceSets.main) } }
+    runs.configureEach {
+        systemProperties.put('zombieBuddyLeafBridge.runtimeJar', buddyJar.absolutePath)
+    }
+}
+
+java {
+    withSourcesJar()
+    toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
+}
+
+tasks.named('processResources') {
+    def props = [
+        version: project.version.toString(),
+        loader_version: leaf_loader_version,
+        zomboid_version: zomboid_version,
+        java_version: java_version
+    ]
+    inputs.properties(props)
+    filesMatching('leaf.mod.json') { expand(props) }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = javaVersion
+    options.encoding = 'UTF-8'
+}
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+tasks.named('jar') {
+    from('LICENSE') { rename { "${it}_${project.name}" } }
+}
+
+tasks.register('buildWorkshop', Sync) {
+    group = 'build'
+    description = 'Assembles the mod for the Project Zomboid Workshop uploader.'
+    into layout.buildDirectory.dir('workshop/ZombieBuddyLeafBridge')
+    from('src/workshop') {
+        include 'workshop.txt', 'preview.png'
+    }
+    into('Contents/mods/ZombieBuddyLeafBridge/42') {
+        from('src/workshop/mod.info')
+        into('media/java') {
+            from(tasks.named('jar').flatMap { it.archiveFile })
+            rename { 'zombie-buddy-leaf-bridge.jar' }
+        }
+    }
+}
+
+spotless {
+    java {
+        target(fileTree('src') { include '**/*.java' }, fileTree('buildSrc/src') { include '**/*.java' })
+        googleJavaFormat(google_java_format_version)
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+publishing {
+    publications {
+        register('bridge', MavenPublication) {
+            from components.java
+        }
+    }
+    def repositoryUrl = providers.gradleProperty('bridgeRepositoryUrl')
+    if (repositoryUrl.isPresent()) repositories {
+        maven {
+            name = 'bridge'
+            url = uri(repositoryUrl.get())
+            if (providers.gradleProperty('bridgeUsername').isPresent()) {
+                credentials(PasswordCredentials)
+            }
+        }
+    }
+}

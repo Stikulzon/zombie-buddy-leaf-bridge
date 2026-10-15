@@ -1,0 +1,12 @@
+{
+    "schemaVersion": 1,
+    "id": "zombie-buddy-leaf-bridge",
+    "version": "${version}",
+    "name": "ZombieBuddy Leaf Bridge",
+    "description": "Runs ZombieBuddy with Leaf",
+    "authors": ["Zefir (Stickulzon)"],
+    "license": "LGPL-3.0",
+    "environment": "client",
+    "entrypoints": {"preLaunch": ["ua.zefir.zombiebuddyleafbridge.BuddyLeafBridge"]},
+    "depends": {"leafloader": ">=${loader_version}", "zomboid": "^${zomboid_version}", "java": ">=${java_version}"}
+}
