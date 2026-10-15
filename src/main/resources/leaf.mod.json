@@ -6,7 +6,7 @@
     "description": "Runs ZombieBuddy with Leaf",
     "authors": ["Zefir (Stickulzon)"],
     "license": "LGPL-3.0",
-    "environment": "client",
+    "environment": "*",
     "entrypoints": {"preLaunch": ["ua.zefir.zombiebuddyleafbridge.BuddyLeafBridge"]},
     "depends": {"leafloader": ">=${loader_version}", "zomboid": "^${zomboid_version}", "java": ">=${java_version}"}
 }
