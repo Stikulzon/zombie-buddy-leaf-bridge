@@ -1,7 +1,12 @@
 version=1
 title=ZombieBuddy Leaf Bridge
 description=Runs ZombieBuddy with Leaf.
-description=Requires Leaf and ZombieBuddy. Follow Leaf's installation instructions and subscribe to both required items.
-description=Make sure you do not have -agentlib:zbNative in your launch options!
+description=
+description=[b]Requires Leaf and ZombieBuddy.[/b] Follow Leaf's installation instructions and subscribe to both required items.
+description=
+description=[h3][b]Make sure you do not have -agentlib:zbNative in your launch options![b]
+description=
+description=[hr][/hr]
+description=Source: https://github.com/Stikulzon/zombie-buddy-leaf-bridge
 tags=Build 42
 visibility=2
