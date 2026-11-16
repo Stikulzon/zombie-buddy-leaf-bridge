@@ -83,6 +83,11 @@ spotless {
         trimTrailingWhitespace()
         endWithNewline()
     }
+    json {
+        target(fileTree('src') { include '**/*.json' })
+        gson().version(gson_version).indentWithSpaces(4)
+        endWithNewline()
+    }
 }
 
 publishing {

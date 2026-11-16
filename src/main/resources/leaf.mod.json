@@ -4,9 +4,19 @@
     "version": "${version}",
     "name": "ZombieBuddy Leaf Bridge",
     "description": "Runs ZombieBuddy with Leaf",
-    "authors": ["Zefir (Stickulzon)"],
+    "authors": [
+        "Zefir (Stickulzon)"
+    ],
     "license": "LGPL-3.0",
     "environment": "*",
-    "entrypoints": {"preLaunch": ["ua.zefir.zombiebuddyleafbridge.BuddyLeafBridge"]},
-    "depends": {"leaf-loader": ">=${loader_version}", "zomboid": "^${zomboid_version}", "java": ">=${java_version}"}
+    "entrypoints": {
+        "preLaunch": [
+            "ua.zefir.zombiebuddyleafbridge.BuddyLeafBridge"
+        ]
+    },
+    "depends": {
+        "leaf-loader": ">=${loader_version}",
+        "zomboid": "^${zomboid_version}",
+        "java": ">=${java_version}"
+    }
 }
