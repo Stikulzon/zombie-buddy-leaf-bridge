@@ -8,5 +8,5 @@
     "license": "LGPL-3.0",
     "environment": "*",
     "entrypoints": {"preLaunch": ["ua.zefir.zombiebuddyleafbridge.BuddyLeafBridge"]},
-    "depends": {"leafloader": ">=${loader_version}", "zomboid": "^${zomboid_version}", "java": ">=${java_version}"}
+    "depends": {"leaf-loader": ">=${loader_version}", "zomboid": "^${zomboid_version}", "java": ">=${java_version}"}
 }
