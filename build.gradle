@@ -8,8 +8,6 @@ plugins {
 version = "${mod_version}+${zomboid_version}"
 def javaVersion = java_version.toInteger()
 
-apply from: 'gradle/jattach.gradle'
-
 repositories {
     maven { url = 'https://maven.aoqia.dev/releases/' }
 }

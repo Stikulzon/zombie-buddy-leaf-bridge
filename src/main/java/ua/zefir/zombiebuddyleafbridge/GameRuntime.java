@@ -17,7 +17,6 @@ public final class GameRuntime {
   private static final String PACKAGE = "me.zed_0xff.zombie_buddy.";
   private static final String INPUT_GAME_JARS = "leaf-loader:inputGameJars";
   private static final String MIXIN_CONFIGURATION = "zombie-buddy-leaf-bridge.mixins.json";
-  private static final int DEFAULT_ATTACH_TIMEOUT_SECONDS = 30;
   private static boolean initialized;
   private static boolean started;
 
@@ -28,29 +27,14 @@ public final class GameRuntime {
 
     Properties config = configuration();
     if (!Boolean.parseBoolean(config.getProperty("enabled", "true"))) return;
-    int attachTimeoutSeconds = attachTimeoutSeconds(config);
     started = true;
     Path source = runtimeJar(config, LeafLoader.getInstance().getGameDir());
     validateRuntimeJar(source);
-    Instrumentation instrumentation = RuntimeInstrumentation.acquire(attachTimeoutSeconds);
+    Instrumentation instrumentation = RuntimeInstrumentation.acquire();
     ensureRuntimeNotLoaded(instrumentation);
     LeafLauncherBase.getLauncher().addToClassPath(source);
     Mixins.addConfiguration(MIXIN_CONFIGURATION);
     startAgent(source, config.getProperty("arguments", ""), instrumentation);
-  }
-
-  private static int attachTimeoutSeconds(Properties config) {
-    String value =
-        config.getProperty(
-            "attachTimeoutSeconds", Integer.toString(DEFAULT_ATTACH_TIMEOUT_SECONDS));
-    try {
-      int seconds = Integer.parseInt(value.trim());
-      if (seconds > 0) return seconds;
-    } catch (NumberFormatException failure) {
-      throw new IllegalArgumentException(
-          "attachTimeoutSeconds must be a positive integer: " + value, failure);
-    }
-    throw new IllegalArgumentException("attachTimeoutSeconds must be a positive integer: " + value);
   }
 
   private static void validateRuntimeJar(Path source) throws Exception {

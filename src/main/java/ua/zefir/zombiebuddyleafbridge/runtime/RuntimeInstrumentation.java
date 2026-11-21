@@ -6,7 +6,6 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -16,34 +15,23 @@ public final class RuntimeInstrumentation {
   private static final System.Logger LOGGER =
       System.getLogger(RuntimeInstrumentation.class.getName());
   private static final String AGENT_CLASS = "ua.zefir.zombiebuddyleafbridge.runtime.RuntimeAgent";
-  private static final int SHUTDOWN_TIMEOUT_SECONDS = 5;
   private static Instrumentation instrumentation;
 
-  public static synchronized Instrumentation acquire(int timeoutSeconds) throws Exception {
-    if (timeoutSeconds <= 0)
-      throw new IllegalArgumentException("Attachment timeout must be positive");
+  public static synchronized Instrumentation acquire() throws Exception {
     if (instrumentation != null) return instrumentation;
     Path directory =
         Files.createTempDirectory(
             Path.of(System.getProperty("java.io.tmpdir")), "zombie-buddy-leaf-bridge-attach-");
     Path agent = directory.resolve("instrumentation.jar");
-    Path output = directory.resolve("attach.log");
-    Path helper = null;
     directory.toFile().deleteOnExit();
     agent.toFile().deleteOnExit();
-    output.toFile().deleteOnExit();
     try {
       createAgentJar(agent);
-      helper = NativeAttach.extract(directory);
-      helper.toFile().deleteOnExit();
-      attachAgent(helper, agent, output, timeoutSeconds);
+      NativeAttach.attach(agent);
       instrumentation = readInstrumentation();
       return instrumentation;
     } finally {
-      boolean helperDeleted = helper == null || cleanup(helper, false);
-      boolean outputDeleted = cleanup(output, false);
-      boolean agentDeleted = cleanup(agent, instrumentation != null);
-      if (helperDeleted && outputDeleted && agentDeleted) cleanup(directory, false);
+      if (cleanup(agent, instrumentation != null)) cleanup(directory, false);
     }
   }
 
@@ -61,63 +49,6 @@ public final class RuntimeInstrumentation {
       jar.putNextEntry(new JarEntry(resource));
       input.transferTo(jar);
       jar.closeEntry();
-    }
-  }
-
-  private static void attachAgent(Path helper, Path agent, Path output, int timeoutSeconds)
-      throws Exception {
-    ProcessBuilder builder =
-        new ProcessBuilder(
-                helper.toString(),
-                Long.toString(ProcessHandle.current().pid()),
-                "load",
-                "instrument",
-                "false",
-                agent.toString())
-            .redirectErrorStream(true)
-            .redirectOutput(output.toFile());
-    Process process;
-    try {
-      process = builder.start();
-    } catch (IOException failure) {
-      throw new IOException(
-          "Cannot start bundled jattach: "
-              + helper
-              + ". Check executable permissions, antivirus restrictions, and whether the temporary"
-              + " directory allows execution.",
-          failure);
-    }
-    try {
-      if (!process.waitFor(timeoutSeconds, TimeUnit.SECONDS)) {
-        process.destroyForcibly();
-        process.waitFor(SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        throw attachmentFailure(
-            "ZombieBuddy runtime attachment timed out after " + timeoutSeconds + " seconds",
-            process,
-            output);
-      }
-      if (process.exitValue() != 0) {
-        throw attachmentFailure("ZombieBuddy requires runtime attachment support", process, output);
-      }
-    } catch (InterruptedException failure) {
-      Thread.currentThread().interrupt();
-      throw new IllegalStateException(
-          "Interrupted while waiting for ZombieBuddy runtime attachment", failure);
-    } finally {
-      if (process.isAlive()) process.destroyForcibly();
-    }
-  }
-
-  private static IllegalStateException attachmentFailure(
-      String message, Process process, Path output) {
-    String status = process.isAlive() ? "still running" : "exit code " + process.exitValue();
-    String context = message + " (helper " + status + ", output: " + output + ")";
-    try {
-      return new IllegalStateException(context + System.lineSeparator() + Files.readString(output));
-    } catch (IOException failure) {
-      IllegalStateException attachmentFailure = new IllegalStateException(context);
-      attachmentFailure.addSuppressed(failure);
-      return attachmentFailure;
     }
   }
 

@@ -8,7 +8,6 @@ java {
 }
 
 sourceSets.main.java.setSrcDirs([])
-apply from: 'gradle/jattach.gradle'
 
 repositories {
     mavenCentral()
